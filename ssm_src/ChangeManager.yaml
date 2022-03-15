@@ -1,0 +1,27 @@
+schemaVersion: '0.3'
+description: >-
+  Chane Manager: IAMロールのIAMポリシーをアタッチ/デタッチするためのChangeManager承認フローのテンプレート。
+  xxx
+  xxx
+templateInformation: >-
+  テンプレートの説明をここに記載する。
+  xxx
+  xxx
+emergencyChange: false
+autoApprovable: false
+executableRunBooks:
+  -
+    name: "SsmTest-AttachDetachIamPolicy"
+    version: "$DEFAULT"
+mainSteps:
+  - name: "ApproveAction1"
+    action: "aws:approve"
+    timeoutSeconds: 10000
+    inputs:
+      Message: "Please approve this change request"
+      EnhancedApprovals:
+        Approvers:
+          -
+            approver: "ChangeMgrTemplateApprover"
+            type: "IamUser"
+            minRequiredApprovals: 1

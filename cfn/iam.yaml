@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: 2010-09-09
+#---------------------------------------
+Resources:
+  #--------IAM User(SSM Admin/ChangeMgr-TemplateApprover/ChangeMgr-Requester)
+  ChangeMgrAdmin:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: ChangeMgrAdmin
+      LoginProfile:
+        Password: "DemoPassword@"
+        PasswordResetRequired: False
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: "SsmAdminSsmPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "ssm:*"
+                Resource: "*"
+        - PolicyName: "SsmAdminIamPassRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "iam:PassRole"
+                Resource: "*"
+  #--
+  ChangeMgrTemplateApprover:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: ChangeMgrTemplateApprover
+      LoginProfile:
+        Password: "DemoPassword@"
+        PasswordResetRequired: False
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: "Approver"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "ssm:UpdateDocumentMetadata"
+                  - "ssm:SendAutomationSignal"
+                Resource: "*"
+  #--
+  ChangeMgrRequester:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: ChangeMgrRequester
+      LoginProfile:
+        Password: "DemoPassword@"
+        PasswordResetRequired: False
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: "Approver"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "ssm:StartChangeRequestExecution"
+                Resource: "*"
+  #--------IAM Role
+  #-- For Test
+  Ec2Role:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: "Ec2-SsmTestRole"
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  Ec2RoleProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref Ec2Role
+  #-- for SSM Automation execution role
+  SsmAutomationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "SsmTest-AutomatonRole"
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ssm.amazonaws.com
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub "${AWS::AccountId}"
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:ssm:*:${AWS::AccountId}:automation-execution/*"
+      Policies:
+        - PolicyName: "SsmAdminSsmPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Sid: "AllowAttachDetach"
+                Effect: "Allow"
+                Action:
+                  - "iam:ListAttachedRolePolicies"
+                  - "iam:AttachRolePolicy"
+                  - "iam:DetachRolePolicy"
+                Resource: "*"
