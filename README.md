@@ -42,7 +42,21 @@ aws --profile ${PROFILE} --region ${REGION} \
         --template-body "file://./cfn/iam.yaml" \
         --capabilities CAPABILITY_NAMED_IAM ;
 ```
-### (2)-(b) Automationで操作するIAMポリシー作成
+### (2)-(b) ChangeManagerで必要となるServiceLinkedRole
+この検証では、以下のServiceLinkedRoleが必要となる。
+| サービスリンクドロール名                            | AWS Service名                      |
+| ----------------------------------------------- | ---------------------------------- |
+| AWSServiceRoleForSystemsManagerChangeManagement | changemanagement.ssm.amazonaws.com |
+| AWSServiceRoleForAmazonSSM                      | ssm.amazonaws.com                  |
+
+必要なServiceLinkedRoleの確認のため、検証用のロールにはCreateServiceLinkedRoleを付与していない。
+必要に応じてAdministratorAccess権限の端末からServiceLinkedRoleを作成すること。
+```shell
+aws --profile ${PROFILE} iam create-service-linked-role --aws-service-name changemanagement.ssm.amazonaws.com
+aws --profile ${PROFILE} iam create-service-linked-role --aws-service-name ssm.amazonaws.com
+```
+
+### (2)-(c) Automationで操作するIAMポリシー作成
 #### (i)テスト用IAM Policy作成
 SSM Automationでテスト用のRoleにアタッチ/デタッチするためのIAMポリシーをCLIで作成します。
 ```shell
