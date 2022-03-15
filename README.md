@@ -1,5 +1,7 @@
 # SystemsManager-ChangeManagerPoC
 システムズマネージャーのChangeManagerに必要な権限の検証
+# 検証構成
+<img src="./Documents/arch.svg" width=600>
 
 # 検証手順
 ## (1)事前設定
