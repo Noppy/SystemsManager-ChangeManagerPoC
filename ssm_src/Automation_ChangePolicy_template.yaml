@@ -28,7 +28,7 @@ mainSteps:
         ROLE_NAME = "Ec2-SsmTestRole"
         POLICY_NAME = "SsmTest-TestIamPolicy"
 
-        def script_handler():
+        def script_handler(events, context):
           # Get Session
           sts = boto3.client('sts')
           iam = boto3.client('iam')
